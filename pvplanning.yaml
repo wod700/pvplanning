@@ -1,0 +1,170 @@
+timezone: "Europe/Amsterdam"
+calendar_id: "e8dc1a0cb1348a03da92a3676a9a5e3d064fcfc5bbbbd7c91dbc8eb70ee5cbba@group.calendar.google.com"
+service_account_file: "service_account.json"
+
+net:
+  max_veilig_kw: 22
+
+pv:
+  panelen: 23
+  wp_per_paneel: 380
+  rendement_factor: 0.9
+
+afwezig:
+  dagen:
+    [] #- 2  # woensdag (0=ma ... 6=zo). Zet leeg voor testen.
+
+grafiek:
+  actief: true
+  bestand: energieplanning_morgen.png
+
+locatie:
+  lat: 52.3489
+  lon: 5.3125
+
+openweather:
+  api_key: "b55e37dbb433bee6394c0b89cfc86e2a"
+
+kosten:
+  net_tarief_eur_per_kwh: 0.30
+  export_kost_eur_per_kwh: 0.00
+
+forecast:
+  cloud_sens: 0.55
+  diffuse_floor: 0.30
+
+# Nieuw: Enphase bron (12 nieuwe panelen) + opschaling naar totaal
+enphase:
+  enabled: true
+  csv_path: "4274933_aangepast_rapport.csv"   # lokaal pad (naast script)
+  interval_minutes: 15
+  produced_wh_column: "Geproduceerde energie (Wh)"
+  datetime_column: "Datum/tijd"
+  datetime_format: "%d-%m-%Y %H:%M"           # pas aan als jouw CSV anders is
+  new_panels: 12
+  old_panels: 11
+  old_factor_vs_new: 0.75                     # jouw factor
+  # optioneel: extra correctiefactor op basis van totale installatie (1.0 = niets)
+  global_scale: 1.0
+
+# Nieuw: baseload/warmtepomp (eerste versie heuristiek)
+baseload:
+  enabled: true
+  default_kw: 0.3  # basislast constant
+
+
+
+jacuzzi:
+  filter_vermogen_kw: 0.4
+
+pvgis:
+  api_version: "v5_3"
+  raddatabase: "PVGIS-SARAH3"
+  pvtechchoice: "crystSi"
+  mountingplace: "free"
+  loss_percent: 14
+  angle: 30
+  aspect: 0
+  ref_year: 2020
+
+email:
+  enabled: true
+  smtp_host: "smtp.gmail.com"
+  smtp_port: 465
+  from: "vanoverveld.willem@gmail.com"
+  to: "w.van.overveld@mail.com"
+  app_password: "rzao xmap jgli mbbr"   # cloud liever via env var
+  attach_graph: true
+
+# Nieuw: commute (dashboard)
+commute:
+  start: "07:00"
+  end: "10:00"
+  thresholds:
+    auto:
+      wind_bft_gte: 7
+      rain_mm_per_hour_gte: 1.5
+      temp_c_lte: -5
+    twijfel:
+      wind_bft_gte: 6
+      rain_mm_per_hour_gte: 0.8
+      temp_c_lte: 2
+
+# Apparaten YAML leidend (aanrader: voeg windows/must_run_daily toe)
+apparaten:
+  vaatwasser:
+    naam: "Vaatwasser"
+    vermogen_kw: 1.6
+    slots: 2
+    prio: 1
+    max_per_week: 7
+    type: "flex"
+    must_run_daily: true
+    window_start: "07:00"
+    window_end: "20:00"
+
+  wasmachine:
+    naam: "Wasmachine + droger (eco)"
+    vermogen_kw: 2.0
+    slots: 7
+    prio: 2
+    max_per_week: 1
+    type: "zwaar"
+    window_start: "09:00"
+    window_end: "17:00"
+
+  zwemmen:
+    naam: "Zwembadpompen"
+    vermogen_kw: 5.2
+    slots: 1
+    prio: 3
+    max_per_week: 2
+    type: "piek"
+    window_start: "11:00"
+    window_end: "15:00"
+
+  sauna:
+    naam: "IR Sauna"
+    vermogen_kw: 2.5
+    slots: 2
+    prio: 4
+    max_per_week: 2
+    type: "comfort"
+    window_start: "10:00"
+    window_end: "16:00"
+
+  jacuzzi_temp:
+    naam: "Jacuzzi Verwarmen"
+    vermogen_kw: 3.0
+    slots: 3
+    prio: 5
+    max_per_week: 99
+    type: "opportunistisch"
+    # vaste filters in slots (30 min)
+    filter_blokken:
+      - start: 18  # 09:00
+        duur: 14   # 7 uur = 14 slots
+      - start: 42  # 21:00
+        duur: 14   # 7 uur = 14 slots
+    temperatuur_profiel:
+      hoog: { min_kwh: 25, temp_c: 38 }
+      normaal: { min_kwh: 15, temp_c: 36 }
+      laag: { min_kwh: 5, temp_c: 34 }
+
+# Optioneel cloud (alleen gebruikt als je env vars zet)
+cloud:
+  enabled: false
+  gcs_bucket: ""      # liever via env GCS_BUCKET
+  gcs_prefix: "pvplanning"
+
+warmtepomp:
+  enabled: true
+  mode: "temp"        # "baseload" of "temp"
+  baseload_kw: 0.6        # alleen bij baseload
+
+  # Alleen bij mode: temp
+  setpoint_c: 20.0
+  slope_kw_per_c: 0.10
+  min_kw: 0.0
+  max_kw: 5.0
+
