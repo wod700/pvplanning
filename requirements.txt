@@ -11,3 +11,8 @@ google-cloud-storage==2.18.2
 streamlit==1.39.0
 pandas==2.2.3
 Pillow==10.4.0
+
+requests
+
+google-auth-oauthlib
+google-api-python-client
